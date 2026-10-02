@@ -1,0 +1,17 @@
+[project]
+name = "assitente-investimento-rpa-ia"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+assitente-investimento-rpa-ia = "assitente_investimento_rpa_ia:main"
+
+[build-system]
+requires = ["uv_build>=0.12.21,<0.13.0"]
+build-backend = "uv_build"

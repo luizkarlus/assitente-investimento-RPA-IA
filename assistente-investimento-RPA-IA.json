@@ -1,0 +1,155 @@
+{
+  "name": "assistente-investimento-RPA-IA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clientes-investimento",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4458a997-e10f-4f6d-8cb6-ed2f0d9479b1",
+      "name": "Webhook",
+      "webhookId": "e6d77fd2-248b-48f4-9b97-99e1afc73bd2"
+    },
+    {
+      "parameters": {
+        "url": "https://digitalinnovationone.github.io/dio-lab-assistente-investimentos-rpa-n8n/data.csv",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3350212a-152c-442c-a312-2df54aa3e997",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b884bd63-eee6-46ab-8192-bc4bb9c6841d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pega os clientes vindos do nó Webhook\n// (Ajuste o nome do nó 'Webhook' se você renomeou)\nconst webhookData = $('Webhook').first().json;\nconst clientes = webhookData.body?.clientes || webhookData.clientes || [];\n\n// 2. Pega todos os itens lidos do CSV\n// (Ajuste 'Extract from File' para o nome exato do seu nó de CSV)\nconst investimentos = $('Extract from File').all().map(item => item.json);\n\n// 3. Cruza os dados: para cada cliente, acha o investimento compatível\nconst resultado = clientes.map(cliente => {\n  // Procura o produto com o mesmo perfil do cliente\n  const produtoIndicado = investimentos.find(inv => \n    inv.perfil?.toLowerCase() === cliente.perfil?.toLowerCase()\n  );\n\n  return {\n    json: {\n      nome: cliente.nome,\n      email: cliente.email,\n      saldo: cliente.saldo,\n      perfil: cliente.perfil,\n      produto: produtoIndicado ? produtoIndicado.produto : \"Nenhum produto encontrado\",\n      rentabilidade: produtoIndicado ? produtoIndicado.rentabilidade : \"N/A\",\n      minimo: produtoIndicado ? produtoIndicado.minimo : \"N/A\"\n    }\n  };\n});\n\nreturn resultado;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "e91e0c53-d70c-4e21-8089-2cee8cd311dc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Você é um consultor financeiro especializado e atencioso.\nEscreva uma mensagem personalizada e profissional para o cliente abaixo recomendando o investimento ideal:\n\nDados do Cliente:\n- Nome: {{ $json.nome }}\n- Perfil de Investidor: {{ $json.perfil }}\n- Saldo em Conta: {{ $json.saldo }}\n\nInvestimento Recomendado:\n- Produto: {{ $json.produto }}\n- Rentabilidade Estimada: {{ $json.rentabilidade }}\n- Aplicação Mínima: R$ {{ $json.minimo }}\n\nDiretrizes:\n- Cumprimente o cliente pelo nome.\n- Explique de forma amigável por que esse produto combina com o perfil dele.\n- Incentive-o a investir considerando o saldo disponível.\n- Seja cordial, direto e encerre com uma assinatura profissional."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "92c310df-528f-40e3-bfe7-15d58a124158",
+      "name": "Message a model"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "44ff6bdc-4b61-4171-9c04-af3c922834a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f1c819c642fdf6fad92820f6bf884d05cf9439906ed5993e61f71969ddb11139"
+  },
+  "nodeGroups": [],
+  "id": "QOlfegftjrni3wtv",
+  "tags": []
+}
